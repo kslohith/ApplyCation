@@ -80,21 +80,20 @@ def get_keyword(text):
     res = claude_api_call(prompt)
     # Extract only list from the response
     res_reg = re.findall(r'\[([^\]]+)\]', res)
-    # print(res_reg)
     return res_reg
 
 user_dict = {}
 def create_user_profile(name, email, uploaded_file, job_role, job_type, experience, gender = None, race = None, sponsorship = None, veteran_status = None, disability_status = None) -> dict:
     """Creates a user profile dictionary."""
     resume_text = extract_text_from_pdf(uploaded_file)
-    keywords = get_keyword(resume_text)
+    # keywords = get_keyword(resume_text)
+    keywords = extract_keywords(resume_text)
     user_dict[name] = {
         "email": email,
         "job_role": job_role,
         "job_type": job_type,
         "experience": experience,
         "keywords": keywords,
-        "uploaded_file": None,
         "raw_resume_text": resume_text,
         "gender": gender,
         "race": race,
@@ -104,7 +103,7 @@ def create_user_profile(name, email, uploaded_file, job_role, job_type, experien
     }
     return user_dict
 
-def upload_user_profile_to_bucket(user_dict, bucket_name, filename="user_profile.json"):
+def upload_user_profile_to_bucket(user_dict, bucket_name):
     """Uploads the user_dict to Google Cloud Storage as a JSON file."""
     # Convert the dictionary to JSON format
     json_data = json.dumps(user_dict)
@@ -118,3 +117,26 @@ def upload_user_profile_to_bucket(user_dict, bucket_name, filename="user_profile
     # Upload JSON data to the blob
     blob.upload_from_string(json_data, content_type="application/json")
     print(f"{filename} uploaded to {bucket_name}.")
+
+def upload_resume_to_bucket(file, user_dict, bucket_name):
+    """Uploads the resume file to Google Cloud Storage."""
+
+    # Ensure the file stream is at the beginning
+    file.seek(0)
+
+    # Specify the bucket and create a Blob (file object) in the bucket
+    bucket = storage_client.get_bucket(bucket_name)
+    file_name = f"{list(user_dict.keys())[-1]}_resume.pdf" # Use the user's name for the file name
+    blob = bucket.blob(file_name)
+    
+    # Upload the file to the blob
+    blob.upload_from_file(file)
+    print(f"{file_name} uploaded to {bucket_name}.")
+
+    # Get the public URL of the uploaded file
+    # public_url = f"https://storage.cloud.google.com/{bucket_name}/{file_name}"
+    public_url = f"https://storage.googleapis.com/{bucket_name}/{file_name}"
+
+    # update user_dict with the public URL of the uploaded resume
+    user_dict[list(user_dict.keys())[-1]]["resume_url"] = public_url
+    return user_dict
