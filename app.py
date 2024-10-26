@@ -3,7 +3,7 @@ from scraping import get_relevant_jobs
 
 app = Flask(__name__)
 
-@app.route('/getUserRelevantJobs')
+@app.route('/getUserRelevantJobs', methods=['GET'])
 def getUserReleventJobs():
     return  get_relevant_jobs()
 

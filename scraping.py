@@ -133,7 +133,6 @@ def get_relevant_jobs():
     candidate_relevent_jobs = {}
 
     for candidate in candidate_data:
-        # print(candidate.get('keywords', []))
         for name, details in candidate.items():
             candidate_relevent_jobs[name] = {}
             candidate_relevent_jobs[name]['skills'] = details.get('keywords', [])
@@ -145,5 +144,3 @@ def get_relevant_jobs():
             candidate_relevent_jobs[name]['jobs'] = claude_api_call(Prompt)
     
     return candidate_relevent_jobs
-
-get_relevant_jobs()
