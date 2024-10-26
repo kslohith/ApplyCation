@@ -5,10 +5,11 @@ st.set_page_config(page_title="📝 Smart Apply", page_icon="📝", layout="cent
 
 st.title("📝 Smart Apply!")
 
+name = st.text_input("Full Name *", placeholder="John Doe")
+email = st.text_input("Email Address *", placeholder="you@example.com")
+
 st.write("## Upload Your Resume")
 uploaded_file = st.file_uploader("Choose your resume file *", type=("pdf"))
-
-email = st.text_input("Email Address *", placeholder="you@example.com")
 
 st.write("## Job Preferences")
 job_roles = st.multiselect(
@@ -21,14 +22,14 @@ if "Other" in job_roles:
     other_role = st.text_input("Please specify other role")
 
 job_type = st.selectbox(
-    "What type of job are you looking for?",
+    "What type of job are you looking for? *",
     ["Select an option", "Full-time", "Part-time", "Internship", "Contract", "Temporary"],
     help="Select the type of job you are looking for."
 )
 
 # Experience Level
 experience_level = st.selectbox(
-    "What is your experience level?",
+    "What is your experience level? *",
     ["Select an option", "Entry-level", "Mid-level", "Senior-level"],
     help="Select your experience level."
 )
@@ -69,19 +70,10 @@ disability_status = st.selectbox(
 
 # Add a button to submit the form
 if st.button("Submit"):
-    if uploaded_file and job_roles and email:
+    if uploaded_file and job_roles and email and name and job_type and experience_level:
         st.success("Hold on! We are applying to the best jobs for you...")
-        resume_text = extract_text_from_pdf(uploaded_file)
-        keywords = extract_keywords(resume_text)
-        # if keywords:
-        #     st.write("## Extracted Keywords")
-        #     num_columns = 3 
-        #     cols = st.columns(num_columns)
-        #     for idx, keyword in enumerate(keywords):
-        #         with cols[idx % num_columns]:
-        #             st.write(f"- {keyword}")
-        # else:
-        #     st.warning("No keywords detected in the resume.")
+        users = create_user_profile(name, email, uploaded_file, job_roles, job_type, experience_level)
+        upload_user_profile_to_bucket(users, "candidate_data_smart_apply")
     else:
         st.info("Please complete all the required fields above to proceed.")
 
