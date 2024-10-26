@@ -6,9 +6,17 @@ import os
 from google.cloud import firestore
 from google.cloud import storage
 import json
+import anthropic
+from dotenv import load_dotenv
+load_dotenv()
+
+claude_key = os.getenv("CLAUDE_API_KEY")
+client = anthropic.Anthropic(
+    api_key=claude_key,
+)
 
 # Set the environment variable for authentication
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "root-array-439820-h6-32e68f23ed2e.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 
 # Initialize Firestore client
 db = firestore.Client()
@@ -24,15 +32,6 @@ def extract_text_from_pdf(file):
             text += page.extract_text() + "\n"
     return text
 
-def extract_skills_section(text):
-    """Extracts the 'Skills' section from the resume text."""
-    # Look for "Skills" section heading and capture text until the next section
-    skills_match = re.search(r"(Skills|Technical Skills|Core Competencies)\s*[:\-]?\s*(.*?)(?=\n[A-Z][a-z]|\n\n|\Z)", text, re.IGNORECASE | re.DOTALL)
-    if skills_match:
-        return skills_match.group(2).strip()
-    return text  # If no skills section found, return the whole text
-
-
 def remove_similar_keywords(keywords):
     """Removes similar keywords to reduce redundancy."""
     unique_keywords = []
@@ -47,9 +46,6 @@ def remove_similar_keywords(keywords):
 kw_model = KeyBERT()
 
 def extract_keywords(text):
-    # First, try to isolate the skills section
-    # skills_text = extract_skills_section(text)
-    
     # Extract a larger pool of keywords for diversity
     raw_keywords = kw_model.extract_keywords(
         # skills_text, 
@@ -63,18 +59,41 @@ def extract_keywords(text):
     filtered_keywords = remove_similar_keywords(raw_keywords)
     return [kw[0] for kw in filtered_keywords][:30]
 
+def claude_api_call(Prompt):
+    message = client.messages.create(
+        model="claude-3-opus-20240229",
+        max_tokens=1024,
+        system="",
+        messages=[
+            {"role": "user", "content": Prompt} 
+        ]
+    )
+    return message.content[0].text
+
+def get_keyword(text):
+    """Get keywords from a phrase using Claude API."""
+    prompt = f"""Given the following text scraped from a resume, please extract and return a list of important skills and keywords that would be essential for job searching and helpful for matching with job descriptions. 
+    Focus on technical skills, certifications, and relevant experiences that stand out.
+    Resume Text:
+    {text}
+    Output format: Return the keywords as a Python list, e.g., ['keyword1', 'keyword2', 'keyword3']."""
+    res = claude_api_call(prompt)
+    # Extract only list from the response
+    res_reg = re.findall(r'\[([^\]]+)\]', res)
+    return res_reg
+
 user_dict = {}
 def create_user_profile(name, email, uploaded_file, job_role, job_type, experience, gender = None, race = None, sponsorship = None, veteran_status = None, disability_status = None) -> dict:
     """Creates a user profile dictionary."""
     resume_text = extract_text_from_pdf(uploaded_file)
-    keywords = extract_keywords(resume_text)
+    keywords = get_keyword(resume_text)
+    # keywords = extract_keywords(resume_text)
     user_dict[name] = {
         "email": email,
         "job_role": job_role,
         "job_type": job_type,
         "experience": experience,
         "keywords": keywords,
-        "uploaded_file": None,
         "raw_resume_text": resume_text,
         "gender": gender,
         "race": race,
@@ -84,7 +103,7 @@ def create_user_profile(name, email, uploaded_file, job_role, job_type, experien
     }
     return user_dict
 
-def upload_user_profile_to_bucket(user_dict, bucket_name, filename="user_profile.json"):
+def upload_user_profile_to_bucket(user_dict, bucket_name):
     """Uploads the user_dict to Google Cloud Storage as a JSON file."""
     # Convert the dictionary to JSON format
     json_data = json.dumps(user_dict)
@@ -98,3 +117,26 @@ def upload_user_profile_to_bucket(user_dict, bucket_name, filename="user_profile
     # Upload JSON data to the blob
     blob.upload_from_string(json_data, content_type="application/json")
     print(f"{filename} uploaded to {bucket_name}.")
+
+def upload_resume_to_bucket(file, user_dict, bucket_name):
+    """Uploads the resume file to Google Cloud Storage."""
+
+    # Ensure the file stream is at the beginning
+    file.seek(0)
+
+    # Specify the bucket and create a Blob (file object) in the bucket
+    bucket = storage_client.get_bucket(bucket_name)
+    file_name = f"{list(user_dict.keys())[-1]}_resume.pdf" # Use the user's name for the file name
+    blob = bucket.blob(file_name)
+    
+    # Upload the file to the blob
+    blob.upload_from_file(file)
+    print(f"{file_name} uploaded to {bucket_name}.")
+
+    # Get the public URL of the uploaded file
+    public_url = f"https://storage.cloud.google.com/{bucket_name}/{file_name}"
+    # public_url = f"https://storage.googleapis.com/{bucket_name}/{file_name}"
+
+    # update user_dict with the public URL of the uploaded resume
+    user_dict[list(user_dict.keys())[-1]]["resume_url"] = public_url
+    return user_dict
