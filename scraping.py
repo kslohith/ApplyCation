@@ -126,8 +126,8 @@ def get_relevant_jobs():
             time.sleep(1)
             job_posting_element = wait.until(EC.presence_of_element_located((By.XPATH, '//div[@data-automation-id="job-posting-details"]')))
             job_posting_text = job_posting_element.text
-            # job_keyword_prompt = f"""Given the job posting: {job_posting_text}, find the keywords that best describe the job. Return the top 10 most relavent and important keywords in the format. Return in this format: [Keyword1,keyword2,...keyword10]. Do not reutn anything apart from this."""
-            # job_keywords = claude_api_call(job_keyword_prompt) 
+            job_keyword_prompt = f"""Given the job posting: {job_posting_text}, find the keywords that best describe the job. Return the top 10 most relavent and important keywords in the format. Return in this format: [Keyword1,keyword2,...keyword10]. Do not return anything apart from this."""
+            job_keywords = claude_api_call(job_keyword_prompt) 
             jobs.append((job_title, job_href, job_keywords))
 
     candidate_relevent_jobs = {}
@@ -143,8 +143,6 @@ def get_relevant_jobs():
                 Only return jobs that match closely with the skills, else return an empty dict. 
                 Return in the format: [job_url1, job_url2,...]. Do not return anything else, just return the list of strings containing job urls"""
             candidate_relevent_jobs[name]['jobs'] = claude_api_call(Prompt)
-
-    print(candidate_relevent_jobs)
     
     return candidate_relevent_jobs
 
