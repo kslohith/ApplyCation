@@ -71,7 +71,7 @@ disability_status = st.selectbox(
 # Add a button to submit the form
 if st.button("Submit"):
     if uploaded_file and job_roles and email and name and job_type and experience_level:
-        st.success("Hold on! We are applying to the best jobs for you...")
+        st.success("Information submitted successfully!")
         users = create_user_profile(name, email, uploaded_file, job_roles, job_type, experience_level)
         users_with_resume = upload_resume_to_bucket(uploaded_file, users, "candidate_resume_smart_apply")
         upload_user_profile_to_bucket(users_with_resume, "candidate_data_smart_apply")

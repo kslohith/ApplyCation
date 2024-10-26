@@ -61,7 +61,7 @@ def extract_keywords(text):
 
 def claude_api_call(Prompt):
     message = client.messages.create(
-        model="claude-3-haiku-20240307",
+        model="claude-3-opus-20240229",
         max_tokens=1024,
         system="",
         messages=[
@@ -86,8 +86,8 @@ user_dict = {}
 def create_user_profile(name, email, uploaded_file, job_role, job_type, experience, gender = None, race = None, sponsorship = None, veteran_status = None, disability_status = None) -> dict:
     """Creates a user profile dictionary."""
     resume_text = extract_text_from_pdf(uploaded_file)
-    # keywords = get_keyword(resume_text)
-    keywords = extract_keywords(resume_text)
+    keywords = get_keyword(resume_text)
+    # keywords = extract_keywords(resume_text)
     user_dict[name] = {
         "email": email,
         "job_role": job_role,
@@ -134,8 +134,8 @@ def upload_resume_to_bucket(file, user_dict, bucket_name):
     print(f"{file_name} uploaded to {bucket_name}.")
 
     # Get the public URL of the uploaded file
-    # public_url = f"https://storage.cloud.google.com/{bucket_name}/{file_name}"
-    public_url = f"https://storage.googleapis.com/{bucket_name}/{file_name}"
+    public_url = f"https://storage.cloud.google.com/{bucket_name}/{file_name}"
+    # public_url = f"https://storage.googleapis.com/{bucket_name}/{file_name}"
 
     # update user_dict with the public URL of the uploaded resume
     user_dict[list(user_dict.keys())[-1]]["resume_url"] = public_url
