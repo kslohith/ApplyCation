@@ -1,13 +1,13 @@
-import csv 
-import pickle
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
+from google.cloud import storage
 import time
 import anthropic
 import os
+import json
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,6 +18,20 @@ client = anthropic.Anthropic(
     api_key=claude_key,
 )
 
+google_application_credentials = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = google_application_credentials
+
+def claude_api_call(Prompt):
+    message = client.messages.create(
+        model="claude-3-opus-20240229",
+        max_tokens=1024,
+        system="",
+        messages=[
+            {"role": "user", "content": Prompt} 
+        ]
+    )
+    return message.content[0].text
 # def claude_api_call(Prompt):
 #     message = client.messages.create(
 #         model="claude-3-haiku-20240307",
@@ -29,11 +43,34 @@ client = anthropic.Anthropic(
 #     )
 #     return message.content[0].text
 
+def download_from_bucket(bucket_name):
+    # Initialize a storage client
+    storage_client = storage.Client()
+
+    # Get the bucket
+    bucket = storage_client.bucket(bucket_name)
+
+    # List all blobs in the bucket
+    blobs = bucket.list_blobs()
+
+    all_candidate_data = []
+
+    for blob in blobs:
+        if blob.name.endswith('.json'):
+            # Download the blob content as a string
+            json_data = blob.download_as_string()
+
+            # Parse the JSON data
+            data = json.loads(json_data)
+
+            all_candidate_data.append(data)
+
+    return all_candidate_data
+
 
 def get_relevant_jobs():
     # Load all the candidate data from the Database (Google Cloud)
-    # To Do
-
+    candidate_data = download_from_bucket('candidate_data_smart_apply')
 
     # Scrap all jobs from the relevant websites
     driver = webdriver.Chrome()
@@ -93,11 +130,22 @@ def get_relevant_jobs():
             # job_keywords = claude_api_call(job_keyword_prompt) 
             jobs.append((job_title, job_href, job_keywords))
 
-    # # Use the candidate data and job data to find best matches
-    # Prompt = f"""Given the following skills that from my resume: {candidate_skills}, find the jobs that best matches my skills out of the following jobs: {jobs}. 
-    #             Only return jobs that match closely with the skills, else return an empty dict. 
-    #             Return in the format: [Job Title: <job_title>, Job URL: <job_url>]"""
+    candidate_relevent_jobs = {}
+
+    for candidate in candidate_data:
+        # print(candidate.get('keywords', []))
+        for name, details in candidate.items():
+            candidate_relevent_jobs[name] = {}
+            candidate_relevent_jobs[name]['skills'] = details.get('keywords', [])
+            candidate_relevent_jobs[name]['raw_resume_text'] = details.get('raw_resume_text')
+            #Use the candidate data and job data to find best matches
+            Prompt = f"""Given the following skills from my resume: {candidate_relevent_jobs[name]['skills']}, find the jobs that best matches my skills out of the following jobs: {jobs}. 
+                Only return jobs that match closely with the skills, else return an empty dict. 
+                Return in the format: [job_url1, job_url2,...]. Do not return anything else, just return the list of strings containing job urls"""
+            candidate_relevent_jobs[name]['jobs'] = claude_api_call(Prompt)
+
+    print(candidate_relevent_jobs)
     
-    # return claude_api_call(Prompt)
+    return candidate_relevent_jobs
 
 get_relevant_jobs()
