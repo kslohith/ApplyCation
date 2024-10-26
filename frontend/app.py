@@ -1,9 +1,9 @@
 import streamlit as st
 from funcs import *
 
-st.set_page_config(page_title="📝 JobMate", page_icon="📝", layout="centered")
+st.set_page_config(page_title="📝 Smart Apply", page_icon="📝", layout="centered")
 
-st.title("📝 JobMate!")
+st.title("📝 Smart Apply!")
 
 st.write("## Upload Your Resume")
 uploaded_file = st.file_uploader("Choose your resume file *", type=("pdf"))
