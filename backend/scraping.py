@@ -9,6 +9,8 @@ import anthropic
 import os
 import json
 from dotenv import load_dotenv
+import vertexai
+from vertexai.generative_models import GenerativeModel
 
 load_dotenv()
 
@@ -32,16 +34,16 @@ def claude_api_call(Prompt):
         ]
     )
     return message.content[0].text
-# def claude_api_call(Prompt):
-#     message = client.messages.create(
-#         model="claude-3-haiku-20240307",
-#         max_tokens=1024,
-#         system="",
-#         messages=[
-#             {"role": "user", "content": Prompt} 
-#         ]
-#     )
-#     return message.content[0].text
+
+def gemini_api_call(Prompt):
+
+    vertexai.init(project=os.getenv("GEMINI_PROJECT_ID"), location="us-central1")
+    model = GenerativeModel("gemini-1.5-flash-002")
+
+    response = model.generate_content(
+        Prompt
+    )
+    return response.text
 
 def download_from_bucket(bucket_name):
     # Initialize a storage client
