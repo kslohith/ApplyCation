@@ -1,9 +1,9 @@
 import streamlit as st
 from funcs import *
 
-st.set_page_config(page_title="📝 Smart Apply", page_icon="📝", layout="centered")
+st.set_page_config(page_title="ApplyCation", page_icon="📝", layout="centered")
 
-st.title("📝 Smart Apply!")
+st.title("📝 ApplyCation!")
 
 name = st.text_input("Full Name *", placeholder="John Doe")
 email = st.text_input("Email Address *", placeholder="you@example.com")
