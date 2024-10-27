@@ -135,6 +135,7 @@ def get_relevant_jobs():
     for candidate in candidate_data:
         for name, details in candidate.items():
             candidate_relevent_jobs[name] = {}
+            candidate_relevent_jobs[name]['resume_url'] = details.get('resume_url')
             candidate_relevent_jobs[name]['skills'] = details.get('keywords', [])
             candidate_relevent_jobs[name]['raw_resume_text'] = details.get('raw_resume_text')
             #Use the candidate data and job data to find best matches
