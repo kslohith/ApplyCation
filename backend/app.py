@@ -1,5 +1,5 @@
 from flask import Flask
-from scraping import get_relevant_jobs
+from backend.scraping import get_relevant_jobs
 
 app = Flask(__name__)
 
@@ -8,4 +8,4 @@ def getUserReleventJobs():
     return  get_relevant_jobs()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
