@@ -8,6 +8,7 @@ from google.cloud import storage
 import json
 import anthropic
 from dotenv import load_dotenv
+import streamlit as st
 load_dotenv()
 
 claude_key = os.getenv("CLAUDE_API_KEY")
@@ -83,7 +84,7 @@ def get_keyword(text):
     return res_reg
 
 user_dict = {}
-def create_user_profile(name, email, uploaded_file, job_role, job_type, experience, gender = None, race = None, sponsorship = None, veteran_status = None, disability_status = None) -> dict:
+def create_user_profile(name, email, uploaded_file, job_role, job_type, experience, gender = None, race = None, sponsorship = None, veteran_status = None, disability_status = None, interested_companies = None) -> dict:
     """Creates a user profile dictionary."""
     resume_text = extract_text_from_pdf(uploaded_file)
     keywords = get_keyword(resume_text)
@@ -93,6 +94,7 @@ def create_user_profile(name, email, uploaded_file, job_role, job_type, experien
         "job_role": job_role,
         "job_type": job_type,
         "experience": experience,
+        "companies": interested_companies,
         "keywords": keywords,
         "raw_resume_text": resume_text,
         "gender": gender,
