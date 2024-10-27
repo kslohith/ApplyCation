@@ -138,9 +138,14 @@ def get_relevant_jobs():
             candidate_relevent_jobs[name]['skills'] = details.get('keywords', [])
             candidate_relevent_jobs[name]['raw_resume_text'] = details.get('raw_resume_text')
             #Use the candidate data and job data to find best matches
-            Prompt = f"""Given the following skills from my resume: {candidate_relevent_jobs[name]['skills']}, find the jobs that best matches my skills out of the following jobs: {jobs}. 
-                Only return jobs that match closely with the skills, else return an empty dict. 
-                Return in the format: [job_url1, job_url2,...]. Do not return anything else, just return the list of strings containing job urls"""
+            Prompt = f"""Given the following skills from my resume: {candidate_relevent_jobs[name]['skills']}, find the jobs that best match my skills out of the following jobs: {jobs}.
+                Then, filter the jobs based on the following criteria: 
+                - Job Role: {candidate_relevent_jobs[name]['job_role']}
+                - Job Type: {candidate_relevent_jobs[name]['job_type']}
+                - Experience Level: {candidate_relevent_jobs[name]['experience']}
+                - Sponsorship: {candidate_relevent_jobs[name]['sponsorship']}
+                Only return jobs that closely match the skills and the specified criteria; otherwise, return an empty dict. 
+                Return in the format: [job_url1, job_url2,...]. Do not return anything else, just return the list of strings containing job URLs."""
             candidate_relevent_jobs[name]['jobs'] = claude_api_call(Prompt)
     
     return candidate_relevent_jobs
