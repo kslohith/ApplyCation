@@ -1,13 +1,13 @@
 # ApplyCation
 
-Smart Apply is an automated job application platform that simplifies the job search process. By uploading your resume and specifying a few basic details, Smart Apply will handle the rest—customizing your resume and applying to roles that align with your preferences. Say goodbye to repetitive applications and hello to a seamless experience!
+ApplyCation is an automated job application platform that simplifies the job search process. By uploading your resume and specifying a few basic details, ApplyCation will handle the rest—customizing your resume and applying to roles that align with your preferences. Say goodbye to repetitive applications and hello to a seamless experience!
 
 ## Features
 
-- **Automated Job Applications**: Just upload your resume, and set your job preferences—like the type of roles you're interested in, work type (full-time, part-time, contract), and basic details. Smart Apply will handle the rest, finding and applying to jobs that match your profile.
-- **Customized Resume Tailoring**: Smart Apply optimizes your resume to match each job description, giving you a stronger shot at landing interviews.
+- **Automated Job Applications**: Just upload your resume, and set your job preferences—like the type of roles you're interested in, work type (full-time, part-time, contract), and basic details. ApplyCation will handle the rest, finding and applying to jobs that match your profile.
+- **Customized Resume Tailoring**: ApplyCation optimizes your resume to match each job description, giving you a stronger shot at landing interviews.
 - **Email Notifications**: Get instant email confirmations for every application sent, so you’re always in the loop.
-- **Hassle-Free Process**: Once you’re set-up, relax and prepare for interviews while Smart Apply manages your applications for you.
+- **Hassle-Free Process**: Once you’re set-up, relax and prepare for interviews while ApplyCation manages your applications for you.
 
 ## Tech Stack
 
